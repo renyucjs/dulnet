@@ -1,0 +1,22 @@
+# 告诉EditorConfig插件，这是根文件，不用继续往上查找
+root = true
+
+# 匹配全部文件
+[*]
+# 结尾换行符，可选"lf"、"cr"、"crlf"
+#end_of_line = lf
+# 在文件结尾插入新行
+insert_final_newline = true
+
+# 匹配c,h结尾的文件
+[*.{c,h,cpp,hpp}]
+# 缩进风格，可选"space"、"tab"
+indent_style = space
+# 缩进的空格数
+indent_size = 4
+# tab宽度
+tab_width = 4
+# 字符集=utf-8
+charset = utf-8
+# 删除空行
+# trim_trailing_whitespace = true
