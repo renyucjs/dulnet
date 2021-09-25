@@ -19,6 +19,7 @@
 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <net/if.h>
 
 /*------------------- Global Definitions and Declarations -------------------*/
 
@@ -41,6 +42,18 @@ static int tcp_listen(char *ip, int port, char *dev_name)
     int opt = 1;
     err = setsockopt(skt, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt));
     assert(!err);
+
+    if (dev_name)
+    {
+        struct ifreq netif;
+        
+        memset(&netif, 0, sizeof(netif));
+        strncpy(&netif.ifr_ifrn.ifrn_name, dev_name, IFNAMSIZ-1);
+        err = setsockopt(skt, SOL_SOCKET, SO_BINDTODEVICE, &netif.ifr_ifrn.ifrn_name, IFNAMSIZ);
+        printf("bind to %s, rtn %d\n", dev_name, err);
+        assert(!err);
+    }
+    
 
     bzero(&addr, sizof(addr));
     addr.sin_family = AF_INET;
