@@ -6,7 +6,7 @@ root = true
 # 结尾换行符，可选"lf"、"cr"、"crlf"
 #end_of_line = lf
 # 在文件结尾插入新行
-insert_final_newline = true
+# insert_final_newline = true
 
 # 匹配c,h结尾的文件
 [*.{c,h,cpp,hpp}]

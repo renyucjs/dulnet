@@ -1,0 +1,140 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+			"type": "cppbuild",
+			"label": "build",
+			"command": "ninja",
+			"args": [
+				"-C",
+				"out/default"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher":{
+				"base": "$gcc",
+				"fileLocation":["relative", "${workspaceFolder}/out/default"]
+			},
+			// "problemMatcher": [
+			// 	"$gcc"
+			// ],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: /usr/bin/gcc"
+		},
+
+		{
+			"type": "cppbuild",
+			"label": "clean",
+			"command": "ninja",
+			"args": [
+				"-C",
+				"out/default",
+				"-t",
+				"clean"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: /usr/bin/gcc"
+		},
+		{
+			"type": "cppbuild",
+			"label": "gen",
+			"command": "gn",
+			"args": [
+				"gen",
+				"-C",
+				"out/default",
+				"--args='is_debug=true'"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "Gen ninja buid file"
+		},
+
+		{
+			"type": "shell",
+			"label": "ssd201-build",
+			"command": "source ./build/ssd201_env.sh && ninja -C out/ssd201",
+			"args": [],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher":{
+				"base": "$gcc",
+				"fileLocation":["relative", "${workspaceFolder}/out/ssd201"]
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "build ssd201"
+		},
+
+		{
+			"type": "cppbuild",
+			"label": "ssd201-clean",
+			"command": "ninja",
+			"args": [
+				"-C",
+				"out/ssd201",
+				"-t",
+				"clean"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "clean ssd201"
+		},
+		{
+			"type": "shell",
+			"label": "ssd201-gen",
+			"command": "gn gen -C out/ssd201 --args='target_os=\"linux\" target_cpu=\"ssd201\"'",
+			"args": [
+				// {
+				// 	"value":"gen -C out/ssd201 --args='target_os=\"linux\" target_cpu=\"ssd201\"'",
+				// 	"quoting": "escape"
+				// }
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "Gen ssd201 buildfiles"
+		}
+    ]
+}

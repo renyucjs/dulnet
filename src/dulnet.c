@@ -19,6 +19,7 @@
 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <net/if.h>
 
 /*------------------- Global Definitions and Declarations -------------------*/
@@ -38,41 +39,77 @@ static int tcp_listen(char *ip, int port, char *dev_name)
     struct sockaddr_in addr;
 
     int skt = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
     int opt = 1;
     err = setsockopt(skt, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt));
     assert(!err);
 
     if (dev_name)
     {
-        struct ifreq netif;
+        // struct ifreq netif;
         
-        memset(&netif, 0, sizeof(netif));
-        strncpy(&netif.ifr_ifrn.ifrn_name, dev_name, IFNAMSIZ-1);
-        err = setsockopt(skt, SOL_SOCKET, SO_BINDTODEVICE, &netif.ifr_ifrn.ifrn_name, IFNAMSIZ);
+        // memset(&netif, 0, sizeof(netif));
+        // strncpy(netif.ifr_ifrn.ifrn_name, dev_name, IFNAMSIZ-1);
+        // err = setsockopt(skt, SOL_SOCKET, SO_BINDTODEVICE, &netif, sizeof(netif));
+        err = setsockopt(skt, SOL_SOCKET, SO_BINDTODEVICE, dev_name, strlen(dev_name));
         printf("bind to %s, rtn %d\n", dev_name, err);
         assert(!err);
     }
     
-
-    bzero(&addr, sizof(addr));
+    bzero(&addr, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr(ip);
+    addr.sin_addr.s_addr = INADDR_ANY;
+    if(ip)
+    {
+        addr.sin_addr.s_addr = inet_addr(ip);
+    }
     addr.sin_port = htons(port);
 
     err = bind(skt, (struct sockaddr *)&addr, sizeof(addr));
     assert(!err);
 
+    printf("Listen at[%s] %s:%d...\n", dev_name?dev_name:" ", ip, port);
+
     err = listen(skt, 8);
     assert(!err);
 
-    return 0;
+    return skt;
 }
-
 
 int main(int argc, char *argv[])
 {
+    char *localip = NULL;
+    char netdev[IFNAMSIZ] = "eth0\0";
+    int port = 12345;
 
+    const char *opt = "l:p:i:";
+    int ch;
+    while ((ch = getopt(argc, argv, opt)) != -1)
+    {
+        switch (ch)
+        {
+        case 'l':  /* local ip: -l 127.0.0.1 */
+            localip = optarg;
+            break;
+        case 'p': /* port: -p 12345 */
+            port = atoi(optarg);
+            break;
+        case 'i':  /* interface: -i eth0 */
+            strncpy(netdev, optarg, IFNAMSIZ-1);
+            break;
+        default:
+            printf("Unknown option: %c\n",(char)optopt);
+            return -1;
+        }
+    }
+    
+    int sfd = tcp_listen(localip, port, netdev);
+    while (1)
+    {
+        int fd = accept(sfd, NULL, NULL);
+        close(fd);
+        printf("accept[%s]: %d\r\n", netdev, fd);
+    }
+    
 }
 
 /*---------------------------------------------------------------------------*/
