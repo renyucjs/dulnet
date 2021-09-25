@@ -16,6 +16,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <errno.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -41,18 +42,25 @@ static int tcp_listen(char *ip, int port, char *dev_name)
     int skt = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     int opt = 1;
     err = setsockopt(skt, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt));
-    assert(!err);
+    if (err != 0) 
+    {
+        printf ("could not set SO_REUSEPORT (%s)\n", strerror(errno));
+        exit (EXIT_FAILURE);
+    }
 
     if (dev_name)
     {
         // struct ifreq netif;
-        
         // memset(&netif, 0, sizeof(netif));
         // strncpy(netif.ifr_ifrn.ifrn_name, dev_name, IFNAMSIZ-1);
         // err = setsockopt(skt, SOL_SOCKET, SO_BINDTODEVICE, &netif, sizeof(netif));
         err = setsockopt(skt, SOL_SOCKET, SO_BINDTODEVICE, dev_name, strlen(dev_name));
+        if (err != 0) 
+        {
+            printf ("could not set SO_BINDTODEVICE (%s)\n", strerror(errno));
+            exit (EXIT_FAILURE);
+        }
         printf("bind to %s, rtn %d\n", dev_name, err);
-        assert(!err);
     }
     
     bzero(&addr, sizeof(addr));
@@ -81,7 +89,7 @@ int main(int argc, char *argv[])
     char netdev[IFNAMSIZ] = "eth0\0";
     int port = 12345;
 
-    const char *opt = "l:p:i:";
+    const char *opt = "hl:p:i:";
     int ch;
     while ((ch = getopt(argc, argv, opt)) != -1)
     {
@@ -96,8 +104,14 @@ int main(int argc, char *argv[])
         case 'i':  /* interface: -i eth0 */
             strncpy(netdev, optarg, IFNAMSIZ-1);
             break;
+        case 'h':  /* Print Usage */
+            printf("Usage: dulnet [-l local_ip, default:any] [-p port, defalut:12345] [-i interface, default:eth0]\r\n");
+            printf("Example: dulnet -l 127.0.0.1 -p 12345 -i eth0 \n");
+            return 0;
         default:
             printf("Unknown option: %c\n",(char)optopt);
+            printf("Usage: dulnet [-l local_ip, default:any] [-p port, defalut:12345] [-i interface, default:eth0]\r\n");
+            printf("Example: dulnet -l 127.0.0.1 -p 12345 -i eth0 \n");
             return -1;
         }
     }
